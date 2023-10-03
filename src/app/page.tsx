@@ -1,15 +1,40 @@
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+// import { PrismaClient } from "@prisma/client";
+// const prisma = new PrismaClient();
 
-const getItems = async () => {
-  const res = await prisma.todo.findMany();
-  return res;
+// const getItems = async () => {
+//   const res = await prisma.todo.findMany();
+//   return res;
+// }
+// import React, { useEffect, useState } from 'react';
+
+const getTodos = async () => {
+  try {
+    const api_url = process.env.APP_URL + "/api/todo"
+    const res = await fetch(api_url, {
+      cache: 'no-store'
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch todos");
+    }
+
+    const data = await res.json(); // Parse JSON response
+
+    // Ensure data.todos is defined, default to an empty array if not
+    if (!data.todos) {
+      data.todos = [];
+    }
+    return data;
+
+  } catch (error) {
+    console.log("Error loading todos: ", error);
+  }
 }
 
-const Home = async () => {
 
-  const items  = await getItems();
-  console.log(items);
+export default async function Home() {
+  const { todos } = await getTodos();
+  console.log(todos);
 
   return (
     <div>
@@ -22,11 +47,11 @@ const Home = async () => {
           </tr>
         </thead>
         <tbody>
-          { items.map((todo, index) => (
-            <tr key={todo.id}>
+          { todos.map((todo, index) => (
+            <tr>
             <td className="text-center">{index + 1 }</td>
             <td className="text-center">{todo.title}</td>
-            <td className="text-center">{todo.complete.toString()}</td>
+            <td className="text-center">{todo.description}</td>
           </tr>
           ))}
           
@@ -36,5 +61,3 @@ const Home = async () => {
     </div>
   )
 }
-
-export default Home
